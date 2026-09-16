@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Kortspel">
+<title>Kortspel</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#f2f1ec;--surf:#fff;--surf2:#f7f6f2;
+  --brd:rgba(0,0,0,.10);--brds:rgba(0,0,0,.18);
+  --tx:#1a1a18;--tx2:#6b6a65;--tx3:#9e9d98;
+  --ac:#185fa5;--acbg:#e6f1fb;--acb:#85b7eb;
+  --dn:#a32d2d;--dnbg:#fcebeb;--dnb:#f09595;
+  --ok:#0f6e56;--okbg:#e1f5ee;--okb:#5dcaa5;
+  --wn:#854f0b;--wnbg:#faeeda;--wnb:#ef9f27;
+  --r:10px;
+}
+@media(prefers-color-scheme:dark){:root{
+  --bg:#1a1a18;--surf:#2c2c2a;--surf2:#232321;
+  --brd:rgba(255,255,255,.10);--brds:rgba(255,255,255,.20);
+  --tx:#f0efe9;--tx2:#a8a79f;--tx3:#6b6a65;
+  --ac:#85b7eb;--acbg:#042c53;--acb:#185fa5;
+  --dn:#f09595;--dnbg:#501313;--dnb:#a32d2d;
+  --ok:#5dcaa5;--okbg:#04342c;--okb:#0f6e56;
+  --wn:#ef9f27;--wnbg:#412402;--wnb:#854f0b;
+}}
+html,body{height:100%;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,sans-serif;color:var(--tx)}
+body{overflow-y:auto;-webkit-overflow-scrolling:touch;padding:env(safe-area-inset-top,12px) 0 0}
+#app{padding:12px 12px 40px;max-width:480px;margin:0 auto}
+.hdr{text-align:center;padding:28px 0 20px}
+.hdr h1{font-size:26px;font-weight:700;margin-bottom:4px}
+.hdr p{font-size:14px;color:var(--tx2)}
+.gc{background:var(--surf);border:0.5px solid var(--brd);border-radius:16px;padding:16px 18px;margin-bottom:10px;cursor:pointer;display:flex;align-items:center;gap:14px}
+.gc:active{opacity:.7}
+.gi{font-size:30px;line-height:1}
+.gn h2{font-size:16px;font-weight:600;margin-bottom:2px}
+.gn p{font-size:12px;color:var(--tx2)}
+.tb{display:flex;align-items:center;gap:10px;margin-bottom:14px;padding-top:4px}
+.bk{font-size:15px;color:var(--ac);background:none;border:none;cursor:pointer;padding:4px 0;-webkit-appearance:none}
+.tb h1{font-size:19px;font-weight:600;flex:1}
+.ts{font-size:12px;color:var(--tx2)}
+.pc{background:var(--surf);border:0.5px solid var(--brd);border-radius:13px;padding:11px 12px;margin-bottom:9px}
+.pt{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.pl{display:flex;align-items:center;gap:8px;flex:1;min-width:0}
+.dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.pn{font-size:15px;font-weight:600;color:var(--tx);border:none;background:transparent;outline:none;width:100px}
+.bgs{display:flex;gap:4px;flex-wrap:wrap}
+.bg{font-size:10px;padding:2px 7px;border-radius:20px;font-weight:600}
+.bgstp{background:var(--wnbg);color:var(--wn)}
+.bgch{background:var(--okbg);color:var(--ok)}
+.pr{display:flex;align-items:center;gap:9px;flex-shrink:0}
+.ub{font-size:19px;background:transparent;border:none;cursor:pointer;padding:4px;color:var(--tx3);line-height:1}
+.ub:active{color:var(--dn)}
+.ptl{font-size:26px;font-weight:700;min-width:46px;text-align:right}
+.ptl.win{color:var(--ac)}
+.la{font-size:11px;color:var(--tx3);margin-bottom:7px;font-style:italic}
+.sl{font-size:10px;color:var(--tx3);margin:7px 0 3px;font-weight:600;text-transform:uppercase;letter-spacing:.05em}
+.bg2{display:grid;gap:5px;margin-bottom:5px}
+.c1{grid-template-columns:1fr}
+.c2{grid-template-columns:1fr 1fr}
+.c3{grid-template-columns:1fr 1fr 1fr}
+.btn{font-size:12px;padding:7px 3px;background:var(--surf2);border:0.5px solid var(--brd);border-radius:var(--r);color:var(--tx);text-align:center;line-height:1.3;-webkit-appearance:none;cursor:pointer}
+.btn.ac{background:var(--acbg);border-color:var(--acb);color:var(--ac)}
+.btn.dn{background:var(--dnbg);border-color:var(--dnb);color:var(--dn)}
+.btn.ok{background:var(--okbg);border-color:var(--okb);color:var(--ok)}
+.btn:active{opacity:.7}
+.bls{display:block;font-size:10px;opacity:.7;margin-top:1px}
+.cr{display:flex;gap:6px;align-items:center;margin-top:6px}
+.ci{width:66px;font-size:15px;text-align:center;border:0.5px solid var(--brds);border-radius:var(--r);padding:7px 5px;background:var(--surf2);color:var(--tx);-webkit-appearance:none;outline:none}
+.ca{flex:1;font-size:13px;padding:7px 0;background:var(--surf2);border:0.5px solid var(--brds);border-radius:var(--r);color:var(--tx);-webkit-appearance:none;cursor:pointer}
+.ca:active{opacity:.7}
+.win-banner{background:var(--okbg);border:0.5px solid var(--okb);border-radius:13px;padding:13px;margin-bottom:11px;text-align:center}
+.win-banner p{font-size:15px;color:var(--ok);font-weight:600}
+.ba{display:flex;gap:7px;margin-top:9px}
+.ab{flex:1;font-size:12px;padding:9px 0;border-radius:var(--r);cursor:pointer;border:0.5px solid var(--brds);background:var(--surf);color:var(--tx);-webkit-appearance:none;text-align:center}
+.ab:active{opacity:.7}
+.ab.dn{color:var(--dn);border-color:var(--dnb);background:var(--dnbg)}
+.ab.ok{color:var(--ok);border-color:var(--okb);background:var(--okbg)}
+.pnl{background:var(--surf);border:0.5px solid var(--brd);border-radius:13px;padding:11px 13px;margin-top:9px}
+.pnl h3{font-size:13px;color:var(--tx2);margin-bottom:7px;font-weight:500}
+table{width:100%;font-size:12px;border-collapse:collapse}
+th{color:var(--tx2);font-weight:400;text-align:left;padding:3px 4px;font-size:11px}
+td{padding:4px;color:var(--tx);border-top:0.5px solid var(--brd)}
+.rg{display:grid;grid-template-columns:1fr 1fr;gap:2px 14px}
+.rr{display:flex;justify-content:space-between;font-size:12px;padding:3px 0;border-top:0.5px solid var(--brd)}
+.rr:first-child{border-top:none}
+.rr span:last-child{color:var(--tx2)}
+.ai{flex:1;font-size:14px;border:0.5px solid var(--brds);border-radius:var(--r);padding:8px 11px;background:var(--surf);color:var(--tx);outline:none;-webkit-appearance:none}
+.er{font-size:12px;color:var(--dn);margin-top:5px;padding:7px 10px;background:var(--dnbg);border-radius:var(--r)}
+.pos{color:var(--ok)}.neg{color:var(--dn)}
+.dlg{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:100;display:flex;align-items:center;justify-content:center;padding:24px}
+.dlg-b{background:var(--surf);border-radius:15px;padding:20px;width:100%;max-width:300px;text-align:center}
+.dlg-b h3{font-size:16px;font-weight:600;margin-bottom:7px}
+.dlg-b p{font-size:13px;color:var(--tx2);margin-bottom:18px}
+.dlg-r{display:flex;gap:9px}
+.dlg-r button{flex:1;font-size:14px;padding:10px 0;border-radius:var(--r);border:0.5px solid var(--brds);background:var(--surf2);color:var(--tx);cursor:pointer;-webkit-appearance:none;font-weight:500}
+.dlg-r .dok{background:var(--dnbg);border-color:var(--dnb);color:var(--dn)}
+.si{background:var(--surf);border:0.5px solid var(--brd);border-radius:13px;padding:13px;margin-bottom:9px}
+.si h3{font-size:13px;font-weight:600;margin-bottom:9px}
+.ri{background:var(--acbg);border:0.5px solid var(--acb);border-radius:11px;padding:9px 13px;margin-bottom:9px;display:flex;align-items:center;justify-content:space-between}
+.ri h2{font-size:15px;font-weight:600;color:var(--ac)}
+.ri p{font-size:11px;color:var(--tx2);margin-top:2px}
+.ri .rc{font-size:21px;font-weight:700;color:var(--ac)}
+.pp{background:var(--surf);border:0.5px solid var(--brd);border-radius:13px;padding:10px 12px;margin-bottom:7px}
+.pp-t{display:flex;align-items:center;justify-content:space-between;margin-bottom:7px}
+.ppn{font-size:14px;font-weight:600}
+.ppbs{display:flex;gap:5px;flex-wrap:wrap}
+.ppb{font-size:13px;width:34px;height:34px;border-radius:var(--r);border:0.5px solid var(--brds);background:var(--surf2);color:var(--tx);cursor:pointer;-webkit-appearance:none;font-weight:500}
+.ppb:active{opacity:.7}
+.ppb.sel{background:var(--acbg);border-color:var(--acb);color:var(--ac);font-weight:700}
+.ppb.fbd{opacity:.3;pointer-events:none}
+.rb{flex:1;font-size:14px;padding:11px 0;border-radius:var(--r);border:0.5px solid var(--brds);background:var(--surf2);color:var(--tx);cursor:pointer;-webkit-appearance:none;font-weight:600;text-align:center}
+.rb:active{opacity:.7}
+.rb.ok-s{background:var(--okbg);border-color:var(--okb);color:var(--ok)}
+.rb.dn-s{background:var(--dnbg);border-color:var(--dnb);color:var(--dn)}
+.ph{font-size:10px;color:var(--tx3);text-align:center;margin:5px 0 3px;font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+.pt2{width:100%;font-size:12px;border-collapse:collapse;margin-top:4px}
+.pt2 th{font-size:11px;color:var(--tx2);padding:3px 4px;text-align:center;border-bottom:0.5px solid var(--brd)}
+.pt2 td{padding:3px 4px;text-align:center;border-top:0.5px solid var(--brd)}
+.pt2 td.rn{color:var(--tx3);text-align:left;font-size:11px}
+.pvok{color:var(--ok);font-weight:600}
+.pvpl{color:var(--dn)}
+.sc{display:flex;gap:7px;margin-bottom:11px}
+.sc-p{flex:1;background:var(--surf);border:0.5px solid var(--brd);border-radius:11px;padding:8px;text-align:center}
+.sc-n{font-size:11px;font-weight:600;margin-bottom:2px}
+.sc-v{font-size:23px;font-weight:700}
+.num-row{display:flex;gap:5px;align-items:center}
+.nb{width:30px;height:30px;border-radius:var(--r);border:0.5px solid var(--brds);background:var(--surf2);color:var(--tx);cursor:pointer;-webkit-appearance:none;font-size:15px}
+.nb:active{opacity:.7}
+.nv{font-size:16px;font-weight:700;min-width:22px;text-align:center}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="dlg"></div>
+<script>
+var COL=['#378ADD','#1D9E75','#D85A30','#D4537E','#7F77DD','#BA7517'];
+function e(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function sv(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(x){}}
+function ld(k){try{var d=localStorage.getItem(k);return d?JSON.parse(d):null}catch(x){return null}}
+function dlg(title,msg,onOk){
+  document.getElementById('dlg').innerHTML='<div class="dlg"><div class="dlg-b"><h3>'+e(title)+'</h3><p>'+e(msg)+'</p><div class="dlg-r"><button onclick="document.getElementById(\'dlg\').innerHTML=\'\'">Avbryt</button><button class="dok" id="dok">Ja</button></div></div></div>';
+  document.getElementById('dok').onclick=function(){document.getElementById('dlg').innerHTML='';onOk();};
+}
+var scr='home';
+var C=ld('chi2')||{players:[{name:'Spelare 1',total:0,history:[],chiDone:false},{name:'Spelare 2',total:0,history:[],chiDone:false}],inputs:{},shHist:false,shRef:false,adding:false,newName:'',err:'',over:false,winner:null,round:1};
+var CWIN=52,CSTOP=45;
+var CHANDS=[{l:'Par',p:1},{l:'Tv\u00e5 par',p:2},{l:'Triss',p:3},{l:'Stege',p:4},{l:'F\u00e4rg',p:5},{l:'K\u00e5k',p:6},{l:'Fyrtal',p:8,ac:1},{l:'F\u00e4rgstege',p:11,ac:1},{l:'Royal Flush',p:20,ac:1}];
+function svC(){sv('chi2',C)}
+function cAdd(i,pts,lbl,chiOk){var b=C.players[i].total;C.players[i].total=Math.max(0,C.players[i].total+pts);C.players[i].history.push({l:lbl,p:pts,r:C.round,b:b,ck:!!chiOk});if(chiOk)C.players[i].chiDone=true;C.err='';cWin();svC();render()}
+function cUndo(i){var p=C.players[i];if(!p.history.length)return;var last=p.history.pop();p.total=last.b;p.chiDone=p.history.some(function(h){return h.ck});if(C.over){C.over=false;C.winner=null}svC();render()}
+function cChi(i,ok){cAdd(i,ok?15:-15,ok?'Chicago \u2713':'Chicago \u2717',ok);C.round++}
+function cFyr(i){dlg('Fyrtal!','Nollst\u00e4ll alla andras po\u00e4ng?',function(){C.players.forEach(function(p,j){if(j!==i){p.history.push({l:'Nollad (fyrtal)',p:-p.total,r:C.round,b:p.total,ck:false});p.total=0}});C.round++;svC();render()})}
+function cCust(i){var v=parseInt(C.inputs[i]);if(isNaN(v)){C.err='Ange ett tal.';render();return}cAdd(i,v,v>=0?'Manuellt +'+v:'Manuellt '+v);C.inputs[i]=''}
+function cWin(){var w=C.players.filter(function(p){return p.total>CWIN});if(w.length){C.over=true;C.winner=w.reduce(function(a,b){return a.total>b.total?a:b}).name}}
+function cReset(){dlg('Nytt spel','Nollst\u00e4lla alla po\u00e4ng?',function(){C.players=C.players.map(function(p){return{name:p.name,total:0,history:[],chiDone:false}});C.round=1;C.inputs={};C.shHist=false;C.shRef=false;C.adding=false;C.over=false;C.winner=null;C.err='';svC();render()})}
+function cAddP(){var n=C.newName.trim();if(!n){C.err='Ange ett namn.';render();return}C.players.push({name:n,total:0,history:[],chiDone:false});C.adding=false;C.newName='';svC();render()}
+function rChicago(){
+  var h='<div class="tb"><button class="bk" onclick="scr=\'home\';render()">\u2190 Hem</button><h1>Chicago</h1><span class="ts">M\u00e5l '+CWIN+'+ \u00b7 Stopp '+CSTOP+'</span></div>';
+  if(C.over&&C.winner)h+='<div class="win-banner"><p>\ud83c\udfc6 '+e(C.winner)+' vinner!</p></div>';
+  C.players.forEach(function(p,i){
+    var atStop=p.total>=CSTOP,winning=p.total>CWIN;
+    var last=p.history[p.history.length-1];
+    var iv=C.inputs[i]||'';
+    h+='<div class="pc"><div class="pt">';
+    h+='<div class="pl"><div class="dot" style="background:'+COL[i%6]+'"></div>';
+    h+='<input class="pn" value="'+e(p.name)+'" oninput="C.players['+i+'].name=this.value;svC()"/>';
+    h+='<div class="bgs">'+(atStop?'<span class="bg bgstp">K\u00f6pstopp</span>':'')+(p.chiDone?'<span class="bg bgch">\u2713 Chicago</span>':'')+'</div></div>';
+    h+='<div class="pr"><button class="ub" onclick="cUndo('+i+')" '+(last?'':'disabled style="opacity:.25"')+'>\u21a9</button>';
+    h+='<div class="ptl'+(winning?' win':'')+'">'+p.total+'</div></div></div>';
+    if(last){var s=last.p>=0?'+':'';h+='<div class="la">Senast: '+e(last.l)+' ('+s+last.p+' p) \u2014 \u21a9 f\u00f6r att \u00e4ngra</div>'}
+    if(!C.over){
+      h+='<div class="sl">Pokerkort</div><div class="bg2 c3">';
+      CHANDS.forEach(function(hd){h+='<button class="btn'+(hd.ac?' ac':'')+'" onclick="cAdd('+i+','+hd.p+',\''+hd.l+'\')">'+hd.l+'<span class="bls">+'+hd.p+' p</span></button>'});
+      h+='</div><div class="bg2 c1"><button class="btn ac" onclick="cAdd('+i+',5,\'Sista stick\')">Sista stick<span class="bls">+5 p</span></button></div>';
+      h+='<div class="bg2 c2"><button class="btn ac" onclick="cChi('+i+',true)">Chicago \u2713<span class="bls">+15 p</span></button><button class="btn dn" onclick="cChi('+i+',false)">Chicago \u2717<span class="bls">\u221215 p</span></button></div>';
+      if(C.players.length>1)h+='<div class="bg2 c1"><button class="btn dn" onclick="cFyr('+i+')">Fyrtal \u2014 nolla alla andra<span class="bls">+8 p via egna po\u00e4ng</span></button></div>';
+      h+='<div class="cr"><input type="number" class="ci" placeholder="\u00b1p" value="'+e(iv)+'" oninput="C.inputs['+i+']=this.value"/><button class="ca" onclick="cCust('+i+')">L\u00e4gg till egna po\u00e4ng</button></div>';
+    }
+    h+='</div>';
+  });
+  if(C.err)h+='<div class="er">'+e(C.err)+'</div>';
+  if(C.adding)h+='<div style="display:flex;gap:7px;margin-top:7px"><input class="ai" id="np" placeholder="Namn" value="'+e(C.newName)+'" oninput="C.newName=this.value" onkeydown="if(event.key===\'Enter\')cAddP()"/><button class="ab" style="max-width:60px" onclick="cAddP()">OK</button></div>';
+  h+='<div class="ba">';
+  if(C.players.length<6&&!C.adding)h+='<button class="ab" onclick="C.adding=true;render()">+ Spelare</button>';
+  h+='<button class="ab" onclick="C.shHist=!C.shHist;render()">\ud83d\udccb Historik</button>';
+  h+='<button class="ab" onclick="C.shRef=!C.shRef;render()">? Po\u00e4ng</button>';
+  h+='<button class="ab dn" onclick="cReset()">Nytt spel</button></div>';
+  if(C.shHist){
+    h+='<div class="pnl"><h3>H\u00e4ndelser</h3><table><tr><th>Runda</th><th>Spelare</th><th>H\u00e4ndelse</th><th style="text-align:right">+/\u2212</th></tr>';
+    var evs=[];C.players.forEach(function(p,pi){p.history.forEach(function(ev){evs.push({l:ev.l,p:ev.p,r:ev.r,pn:p.name,col:COL[pi%6]})})});
+    evs.sort(function(a,b){return a.r-b.r});evs.slice(-25).reverse().forEach(function(ev){var s=ev.p>=0?'+':'';h+='<tr><td style="color:var(--tx3)">'+ev.r+'</td><td style="color:'+ev.col+'">'+e(ev.pn)+'</td><td>'+e(ev.l)+'</td><td style="text-align:right" class="'+(ev.p>=0?'pos':'neg')+'">'+s+ev.p+'</td></tr>'});
+    h+='</table></div>';
+  }
+  if(C.shRef){
+    h+='<div class="pnl"><h3>Po\u00e4ngtabell</h3><div class="rg"><div>';
+    h+='<div class="rr"><span>Par</span><span>1 p</span></div><div class="rr"><span>Tv\u00e5 par</span><span>2 p</span></div><div class="rr"><span>Triss</span><span>3 p</span></div><div class="rr"><span>Stege</span><span>4 p</span></div><div class="rr"><span>F\u00e4rg</span><span>5 p</span></div><div class="rr"><span>K\u00e5k</span><span>6 p</span></div></div><div>';
+    h+='<div class="rr"><span>Fyrtal</span><span>8 p/nolla</span></div><div class="rr"><span>F\u00e4rgstege</span><span>11 p</span></div><div class="rr"><span>Royal Flush</span><span>20 p</span></div><div class="rr"><span>Sista stick</span><span>5 p</span></div><div class="rr"><span>Chicago \u2713</span><span>+15 p</span></div><div class="rr"><span>Chicago \u2717</span><span>\u221215 p</span></div>';
+    h+='</div></div><p style="font-size:11px;color:var(--tx3);margin-top:7px">K\u00f6pstopp '+CSTOP+' p \u00b7 Vinst '+CWIN+'+ p</p></div>';
+  }
+  return h;
+}
+var P=ld('plump2')||{players:[{name:'Spelare 1',total:0,rounds:[]},{name:'Spelare 2',total:0,rounds:[]}],cr:0,phase:'bid',bids:{},results:{},shProto:false,shRestore:false,rRound:undefined,rScores:undefined,err:'',over:false,setup:true};
+function svP(){sv('plump2',P)}
+function pSeq(){var mx=Math.min(10,Math.floor(52/Math.max(P.players.length,2)));var s=[];for(var i=mx;i>=1;i--)s.push(i);for(var i=1;i<P.players.length;i++)s.push(1);for(var i=2;i<=mx;i++)s.push(i);return s}
+function pCards(){return pSeq()[P.cr]||1}
+function pTotal(){return pSeq().length}
+function pLast(){return(P.players.length-1+P.cr)%P.players.length}
+function pOk(i,n){var c=pCards(),l=pLast(),oth=0;Object.entries(P.bids).forEach(function(kv){if(parseInt(kv[0])!==i)oth+=parseInt(kv[1])||0});return!(i===l&&oth+n===c)}
+function pBid(i,n){if(!pOk(i,n)){P.err='F\u00f6rbjudet \u2014 summan g\u00e5r j\u00e4mnt upp!';render();return}P.bids[i]=n;P.err='';if(Object.keys(P.bids).length===P.players.length)P.phase='result';svP();render()}
+function pRes(i,ok){P.results[i]=ok;P.err='';svP();render()}
+function pDone(){
+  var ok=P.players.every(function(_,i){return P.results[i]!==undefined});
+  if(!ok){P.err='Ange resultat f\u00f6r alla.';render();return}
+  var c=pCards();
+  P.players.forEach(function(p,i){var bid=parseInt(P.bids[i])||0;var succ=P.results[i];var pts=succ?parseInt('1'+bid):0;p.rounds.push({c:c,bid:bid,succ:succ,pts:pts});p.total+=pts});
+  P.cr++;P.bids={};P.results={};P.phase='bid';P.err='';
+  if(P.cr>=pTotal())P.over=true;
+  svP();render();
+}
+function pApply(){
+  P.cr=Math.max(0,(P.rRound||1)-1);
+  P.players.forEach(function(p,i){p.total=parseInt(P.rScores[i])||0;while(p.rounds.length>P.cr)p.rounds.pop()});
+  P.bids={};P.results={};P.phase='bid';P.err='';P.shRestore=false;P.rRound=undefined;P.rScores=undefined;
+  P.over=P.cr>=pTotal();svP();render();
+}
+function pReset(){dlg('Nytt spel','Nollst\u00e4lla alla po\u00e4ng?',function(){P.players=P.players.map(function(p){return{name:p.name,total:0,rounds:[]}});P.cr=0;P.bids={};P.results={};P.phase='bid';P.over=false;P.shProto=false;P.err='';P.setup=false;svP();render()})}
+function rPlump(){
+  var h='<div class="tb"><button class="bk" onclick="scr=\'home\';render()">\u2190 Hem</button><h1>Plump</h1></div>';
+  if(P.setup){
+    h+='<div class="si"><h3>Spelare</h3>';
+    P.players.forEach(function(p,i){
+      h+='<div style="display:flex;align-items:center;gap:7px;margin-bottom:7px">';
+      h+='<div class="dot" style="background:'+COL[i%6]+'"></div>';
+      h+='<input class="ai" value="'+e(p.name)+'" style="flex:1" oninput="P.players['+i+'].name=this.value"/>';
+      if(P.players.length>2)h+='<button class="ab dn" style="max-width:38px;padding:5px" onclick="P.players.splice('+i+',1);svP();render()">\u2715</button>';
+      h+='</div>';
+    });
+    if(P.players.length<6)h+='<button class="ab" onclick="P.players.push({name:\'Spelare \'+(P.players.length+1),total:0,rounds:[]});svP();render()" style="width:100%;margin-top:4px">+ Spelare</button>';
+    h+='</div><button class="ab ok" onclick="P.setup=false;svP();render()" style="width:100%;padding:11px;font-size:14px;font-weight:600;margin-top:4px">Starta \u2192</button>';
+    return h;
+  }
+  if(P.over){var pw=P.players.reduce(function(a,b){return a.total>b.total?a:b});h+='<div class="win-banner"><p>\ud83c\udfc6 '+e(pw.name)+' vinner med '+pw.total+' po\u00e4ng!</p></div>'}
+  h+='<div class="sc">';
+  P.players.forEach(function(p,i){h+='<div class="sc-p"><div class="sc-n" style="color:'+COL[i%6]+'">'+e(p.name)+'</div><div class="sc-v">'+p.total+'</div></div>'});
+  h+='</div>';
+  if(!P.over){
+    var cards=pCards(),rnd=P.cr+1,tot=pTotal(),lb=pLast();
+    h+='<div class="ri"><div><h2>Runda '+rnd+' av '+tot+'</h2><p>'+cards+' kort \u00b7 '+e(P.players[lb].name)+' gissar sist</p></div><div class="rc">'+cards+' \ud83c\udccf</div></div>';
+    if(P.phase==='bid'){
+      h+='<div class="ph">Steg 1 \u2014 Gissa antal stick</div>';
+      P.players.forEach(function(p,i){
+        var isLast=i===pLast(),bidVal=P.bids[i],hasBid=bidVal!==undefined;
+        h+='<div class="pp"><div class="pp-t"><span class="ppn" style="color:'+COL[i%6]+'">'+e(p.name)+'</span>';
+        if(hasBid)h+='<span style="font-size:15px;font-weight:700;color:var(--ac)">'+bidVal+' stick</span>';
+        else h+='<span style="font-size:12px;color:var(--tx3)">Inte gissat \u00e4nnu</span>';
+        h+='</div><div class="ppbs">';
+        for(var n=0;n<=cards;n++){var fbd=isLast&&!pOk(i,n);var sel=bidVal===n;h+='<button class="ppb'+(sel?' sel':'')+(fbd?' fbd':'')+'" onclick="pBid('+i+','+n+')">'+n+'</button>'}
+        h+='</div></div>';
+      });
+    } else {
+      h+='<div class="ph">Steg 2 \u2014 Klarade de sitt bud?</div>';
+      P.players.forEach(function(p,i){
+        var bid=P.bids[i],res=P.results[i];
+        h+='<div class="pp"><div class="pp-t"><span class="ppn" style="color:'+COL[i%6]+'">'+e(p.name)+'</span><span style="font-size:12px;color:var(--tx2)">Bud: <strong>'+bid+' stick</strong> \u2192 '+parseInt('1'+bid)+' p</span></div>';
+        h+='<div style="display:flex;gap:7px;margin-top:4px"><button class="rb'+(res===true?' ok-s':'')+'" onclick="pRes('+i+',true)">\u2713 Klarade</button><button class="rb'+(res===false?' dn-s':'')+'" onclick="pRes('+i+',false)">\u2717 Plump</button></div></div>';
+      });
+      h+='<button class="ab ok" onclick="pDone()" style="width:100%;padding:11px;font-size:14px;font-weight:600;margin-top:4px">Avsluta runda \u2192</button>';
+    }
+    if(P.err)h+='<div class="er">'+e(P.err)+'</div>';
+  }
+  h+='<div class="ba"><button class="ab" onclick="P.shProto=!P.shProto;P.shRestore=false;render()">\ud83d\udccb Protokoll</button><button class="ab" onclick="P.shRestore=!P.shRestore;P.shProto=false;render()">\u270f\ufe0f \u00c4ndra l\u00e4ge</button><button class="ab dn" onclick="pReset()">Nytt spel</button></div>';
+  if(P.shRestore){
+    var seq=pSeq(),tot2=pTotal();
+    if(P.rRound===undefined)P.rRound=P.cr+1;
+    if(!P.rScores){P.rScores={};P.players.forEach(function(p,i){P.rScores[i]=p.total})}
+    h+='<div class="pnl"><h3>\u00c4ndra l\u00e4ge manuellt</h3><p style="font-size:12px;color:var(--tx2);margin-bottom:9px">Ange aktuell runda och po\u00e4ng om du tappat data.</p>';
+    h+='<div class="sl" style="margin-top:0">Runda (1\u2013'+tot2+')</div>';
+    h+='<div style="display:flex;align-items:center;gap:7px;margin:5px 0 10px"><button class="ab" style="max-width:38px;padding:5px;font-size:16px" onclick="P.rRound=Math.max(1,P.rRound-1);render()">\u2212</button><div style="flex:1;text-align:center;font-size:19px;font-weight:700">'+P.rRound+'</div><button class="ab" style="max-width:38px;padding:5px;font-size:16px" onclick="P.rRound=Math.min('+tot2+',P.rRound+1);render()">+</button></div>';
+    h+='<div style="font-size:11px;color:var(--tx3);text-align:center;margin-top:-7px;margin-bottom:9px">'+(seq[P.rRound-1]||'?')+' kort denna runda</div>';
+    P.players.forEach(function(p,i){
+      var val=P.rScores[i]!==undefined?P.rScores[i]:p.total;
+      h+='<div style="display:flex;align-items:center;gap:7px;margin-bottom:7px"><div class="dot" style="background:'+COL[i%6]+';flex-shrink:0"></div><span style="font-size:13px;font-weight:600;flex:1">'+e(p.name)+'</span>';
+      h+='<button class="ab" style="max-width:34px;padding:5px;font-size:15px" onclick="P.rScores['+i+']=Math.max(0,P.rScores['+i+']-1);render()">\u2212</button>';
+      h+='<div style="font-size:17px;font-weight:700;min-width:38px;text-align:center">'+val+'</div>';
+      h+='<button class="ab" style="max-width:34px;padding:5px;font-size:15px" onclick="P.rScores['+i+']++;render()">+</button></div>';
+    });
+    h+='<button class="ab ok" onclick="pApply()" style="width:100%;padding:10px;font-size:13px;font-weight:600;margin-top:4px">Till\u00e4mpa</button></div>';
+  }
+  if(P.shProto){
+    var maxR=Math.max.apply(null,P.players.map(function(p){return p.rounds.length}).concat([0]));
+    if(maxR===0)h+='<div class="pnl"><h3>Protokoll</h3><p style="font-size:13px;color:var(--tx3)">Inga rundor \u00e4nnu.</p></div>';
+    else{
+      var seq2=pSeq();
+      h+='<div class="pnl"><h3>Protokoll</h3><div style="overflow-x:auto"><table class="pt2"><tr><th>Kort</th>';
+      P.players.forEach(function(p,pi){h+='<th style="color:'+COL[pi%6]+'">'+e(p.name)+'</th>'});
+      h+='</tr>';
+      for(var r=0;r<maxR;r++){h+='<tr><td class="rn">'+(seq2[r]||'?')+'</td>';P.players.forEach(function(p){var rd=p.rounds[r];if(!rd){h+='<td>\u2013</td>';return}h+=rd.succ?'<td class="pvok">'+rd.pts+'</td>':'<td class="pvpl">\u2731</td>'});h+='</tr>'}
+      h+='<tr style="font-weight:700"><td class="rn">\u03a3</td>';
+      P.players.forEach(function(p){h+='<td>'+p.total+'</td>'});
+      h+='</tr></table></div></div>';
+    }
+  }
+  return h;
+}
+var K=ld('kas1')||{players:[{name:'Spelare 1',rounds:[]},{name:'Spelare 2',rounds:[]}],shHist:false,shRef:false,over:false,winner:null,setup:true,err:''};
+function svK(){sv('kas1',K)}
+function kPts(r){return(r.fk?1:0)+(r.fs?2:0)+(r.ess||0)+(r.li?1:0)+(r.st?2:0)+(r.tab||0)+(r.sis?1:0)}
+var kIn={};
+function kInit(){kIn={};K.players.forEach(function(_,i){kIn[i]={fk:false,fs:false,ess:0,li:false,st:false,tab:0,sis:false}})}
+function kSave(){
+  var scores=K.players.map(function(_,i){return Object.assign({},kIn[i])});
+  scores.forEach(function(s,i){K.players[i].rounds.push(s)});
+  var tots=K.players.map(function(p){return p.rounds.reduce(function(a,r){return a+kPts(r)},0)});
+  var mx=Math.max.apply(null,tots);
+  if(mx>=9){K.over=true;var wins=K.players.filter(function(_,i){return tots[i]===mx});K.winner=wins.map(function(p){return p.name}).join(' & ')}
+  kInit();svK();render();
+}
+function kReset(){dlg('Nytt spel','Nollst\u00e4lla?',function(){K.players=K.players.map(function(p){return{name:p.name,rounds:[]}});K.over=false;K.winner=null;K.shHist=false;K.err='';K.setup=false;kInit();svK();render()})}
+function rKasino(){
+  var h='<div class="tb"><button class="bk" onclick="scr=\'home\';render()">\u2190 Hem</button><h1>Kasino</h1></div>';
+  if(K.setup){
+    h+='<div class="si"><h3>Spelare</h3>';
+    K.players.forEach(function(p,i){
+      h+='<div style="display:flex;align-items:center;gap:7px;margin-bottom:7px"><div class="dot" style="background:'+COL[i%6]+'"></div>';
+      h+='<input class="ai" value="'+e(p.name)+'" style="flex:1" oninput="K.players['+i+'].name=this.value"/>';
+      if(K.players.length>2)h+='<button class="ab dn" style="max-width:38px;padding:5px" onclick="K.players.splice('+i+',1);svK();render()">\u2715</button>';
+      h+='</div>';
+    });
+    if(K.players.length<4)h+='<button class="ab" onclick="K.players.push({name:\'Spelare \'+(K.players.length+1),rounds:[]});svK();render()" style="width:100%;margin-top:4px">+ Spelare</button>';
+    h+='</div><button class="ab ok" onclick="K.setup=false;kInit();svK();render()" style="width:100%;padding:11px;font-size:14px;font-weight:600;margin-top:4px">Starta \u2192</button>';
+    return h;
+  }
+  var tots=K.players.map(function(p){return p.rounds.reduce(function(a,r){return a+kPts(r)},0)});
+  var mx=Math.max.apply(null,tots);
+  if(K.over&&K.winner)h+='<div class="win-banner"><p>\ud83c\udfc6 '+e(K.winner)+' vinner!</p></div>';
+  h+='<div class="sc">';
+  K.players.forEach(function(p,i){h+='<div class="sc-p"><div class="sc-n" style="color:'+COL[i%6]+'">'+e(p.name)+'</div><div class="sc-v" style="color:'+(tots[i]===mx&&mx>0?'var(--ac)':'var(--tx)')+'">'+tots[i]+'</div></div>'});
+  h+='</div>';
+  if(!K.over){
+    if(!Object.keys(kIn).length)kInit();
+    h+='<div class="pnl" style="margin-top:0"><h3>Runda '+(K.players[0].rounds.length+1)+' \u2014 ange po\u00e4ng</h3>';
+    h+='<div class="sl" style="margin-top:4px">Flest kort (+1 p)</div><div class="bg2" style="grid-template-columns:repeat('+(K.players.length+1)+',1fr);margin-bottom:8px">';
+    K.players.forEach(function(p,i){h+='<button class="btn'+(kIn[i]&&kIn[i].fk?' ac':'')+'" onclick="K.players.forEach(function(_,j){kIn[j].fk=false});kIn['+i+'].fk=true;render()">'+e(p.name)+'</button>'});
+    var noFK=!K.players.some(function(_,i){return kIn[i]&&kIn[i].fk});
+    h+='<button class="btn'+(noFK?' ac':'')+'" onclick="K.players.forEach(function(_,j){kIn[j].fk=false});render()">Ingen</button></div>';
+    h+='<div class="sl">Flest spader (+2 p)</div><div class="bg2" style="grid-template-columns:repeat('+(K.players.length+1)+',1fr);margin-bottom:8px">';
+    K.players.forEach(function(p,i){h+='<button class="btn'+(kIn[i]&&kIn[i].fs?' ac':'')+'" onclick="K.players.forEach(function(_,j){kIn[j].fs=false});kIn['+i+'].fs=true;render()">'+e(p.name)+'</button>'});
+    var noFS=!K.players.some(function(_,i){return kIn[i]&&kIn[i].fs});
+    h+='<button class="btn'+(noFS?' ac':'')+'" onclick="K.players.forEach(function(_,j){kIn[j].fs=false});render()">Ingen</button></div>';
+    h+='<div class="sl">Sistan (+1 p)</div><div class="bg2" style="grid-template-columns:repeat('+(K.players.length+1)+',1fr);margin-bottom:8px">';
+    K.players.forEach(function(p,i){h+='<button class="btn'+(kIn[i]&&kIn[i].sis?' ac':'')+'" onclick="K.players.forEach(function(_,j){kIn[j].sis=false});kIn['+i+'].sis=true;render()">'+e(p.name)+'</button>'});
+    var noSis=!K.players.some(function(_,i){return kIn[i]&&kIn[i].sis});
+    h+='<button class="btn'+(noSis?' ac':'')+'" onclick="K.players.forEach(function(_,j){kIn[j].sis=false});render()">Ingen</button></div>';
+    h+='<div class="sl">Per spelare</div>';
+    K.players.forEach(function(p,i){
+      var ri=kIn[i]||{};var pts=kPts(ri);
+      h+='<div style="background:var(--surf2);border:0.5px solid var(--brd);border-radius:11px;padding:9px 11px;margin-bottom:7px">';
+      h+='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:7px"><span style="font-size:13px;font-weight:600;color:'+COL[i%6]+'">'+e(p.name)+'</span><span style="font-size:15px;font-weight:700;color:var(--ac)">+'+pts+' p</span></div>';
+      h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:5px">';
+      h+='<div><div style="font-size:10px;color:var(--tx3);margin-bottom:3px">Ess (+1 p st)</div><div class="num-row"><button class="nb" onclick="kIn['+i+'].ess=Math.max(0,(kIn['+i+'].ess||0)-1);render()">\u2212</button><span class="nv">'+(ri.ess||0)+'</span><button class="nb" onclick="kIn['+i+'].ess=Math.min(4,(kIn['+i+'].ess||0)+1);render()">+</button></div></div>';
+      h+='<div><div style="font-size:10px;color:var(--tx3);margin-bottom:3px">Tabbar (+1 p st)</div><div class="num-row"><button class="nb" onclick="kIn['+i+'].tab=Math.max(0,(kIn['+i+'].tab||0)-1);render()">\u2212</button><span class="nv">'+(ri.tab||0)+'</span><button class="nb" onclick="kIn['+i+'].tab=(kIn['+i+'].tab||0)+1;render()">+</button></div></div>';
+      h+='<button class="btn'+(ri.li?' ac':'')+'" onclick="kIn['+i+'].li=!kIn['+i+'].li;render()">\u2660 2 Lillan<span class="bls">+1 p</span></button>';
+      h+='<button class="btn'+(ri.st?' ac':'')+'" onclick="kIn['+i+'].st=!kIn['+i+'].st;render()">\u2666 10 Storan<span class="bls">+2 p</span></button>';
+      h+='</div></div>';
+    });
+    h+='<button class="ab ok" onclick="kSave()" style="width:100%;padding:11px;font-size:14px;font-weight:600;margin-top:4px">Spara runda \u2192</button></div>';
+  }
+  h+='<div class="ba"><button class="ab" onclick="K.shHist=!K.shHist;K.shRef=false;render()">\ud83d\udccb Historik</button><button class="ab" onclick="K.shRef=!K.shRef;K.shHist=false;render()">? Po\u00e4ng</button><button class="ab dn" onclick="kReset()">Nytt spel</button></div>';
+  if(K.shHist){
+    var mxR=Math.max.apply(null,K.players.map(function(p){return p.rounds.length}).concat([0]));
+    h+='<div class="pnl"><h3>Historik</h3><div style="overflow-x:auto"><table><tr><th>Runda</th>';
+    K.players.forEach(function(p,pi){h+='<th style="color:'+COL[pi%6]+'">'+e(p.name)+'</th>'});
+    h+='</tr>';
+    var run=K.players.map(function(){return 0});
+    for(var r=0;r<mxR;r++){h+='<tr><td style="color:var(--tx3)">'+(r+1)+'</td>';K.players.forEach(function(p,i){var rd=p.rounds[r];if(!rd){h+='<td>\u2013</td>';return}var pts=kPts(rd);run[i]+=pts;h+='<td class="pos">+'+pts+'</td>'});h+='</tr>'}
+    h+='<tr style="font-weight:700"><td>\u03a3</td>';run.forEach(function(t){h+='<td>'+t+'</td>'});h+='</tr></table></div></div>';
+  }
+  if(K.shRef){h+='<div class="pnl"><h3>Po\u00e4ngtabell</h3><div class="rg"><div><div class="rr"><span>Flest kort</span><span>1 p</span></div><div class="rr"><span>Flest spader</span><span>2 p</span></div><div class="rr"><span>Sistan</span><span>1 p</span></div></div><div><div class="rr"><span>Per ess</span><span>1 p</span></div><div class="rr"><span>Lillan (\u26602)</span><span>1 p</span></div><div class="rr"><span>Storan (\u266610)</span><span>2 p</span></div><div class="rr"><span>Per tabbe</span><span>1 p</span></div></div></div></div>'}
+  return h;
+}
+var H=ld('hja1')||{players:[{name:'Spelare 1',total:0,rounds:[]},{name:'Spelare 2',total:0,rounds:[]},{name:'Spelare 3',total:0,rounds:[]},{name:'Spelare 4',total:0,rounds:[]}],shHist:false,over:false,winner:null,setup:true,err:''};
+var HWIN=100;
+function svH(){sv('hja1',H)}
+var hIn={};
+function hInit(){hIn={};H.players.forEach(function(_,i){hIn[i]={hj:0,sq:false,moon:false}})}
+function hPts(i){var ri=hIn[i];return(ri.hj||0)+(ri.sq?13:0)}
+function hSave(){
+  var moonIdx=H.players.findIndex(function(_,i){return hIn[i]&&hIn[i].moon});
+  H.players.forEach(function(p,i){var pts=moonIdx>=0?(i===moonIdx?0:26):hPts(i);p.rounds.push({hj:hIn[i].hj||0,sq:!!hIn[i].sq,moon:i===moonIdx,pts:pts});p.total+=pts});
+  if(H.players.some(function(p){return p.total>=HWIN})){H.over=true;var mn=Math.min.apply(null,H.players.map(function(p){return p.total}));H.winner=H.players.filter(function(p){return p.total===mn}).map(function(p){return p.name}).join(' & ')}
+  hInit();svH();render();
+}
+function hReset(){dlg('Nytt spel','Nollst\u00e4lla?',function(){H.players=H.players.map(function(p){return{name:p.name,total:0,rounds:[]}});H.over=false;H.winner=null;H.shHist=false;H.err='';H.setup=false;hInit();svH();render()})}
+function rHjarter(){
+  var h='<div class="tb"><button class="bk" onclick="scr=\'home\';render()">\u2190 Hem</button><h1>Hj\u00e4rter</h1><span class="ts">Slut vid '+HWIN+' p \u00b7 L\u00e4gst vinner</span></div>';
+  if(H.setup){
+    h+='<div class="si"><h3>Spelare (2\u20136)</h3>';
+    H.players.forEach(function(p,i){
+      h+='<div style="display:flex;align-items:center;gap:7px;margin-bottom:7px"><div class="dot" style="background:'+COL[i%6]+'"></div>';
+      h+='<input class="ai" value="'+e(p.name)+'" style="flex:1" oninput="H.players['+i+'].name=this.value"/>';
+      if(H.players.length>2)h+='<button class="ab dn" style="max-width:38px;padding:5px" onclick="H.players.splice('+i+',1);svH();render()">\u2715</button>';
+      h+='</div>';
+    });
+    if(H.players.length<6)h+='<button class="ab" onclick="H.players.push({name:\'Spelare \'+(H.players.length+1),total:0,rounds:[]});svH();render()" style="width:100%;margin-top:4px">+ Spelare</button>';
+    h+='</div><button class="ab ok" onclick="H.setup=false;hInit();svH();render()" style="width:100%;padding:11px;font-size:14px;font-weight:600;margin-top:4px">Starta \u2192</button>';
+    return h;
+  }
+  if(H.over&&H.winner)h+='<div class="win-banner"><p>\ud83c\udfc6 '+e(H.winner)+' vinner med l\u00e4gst po\u00e4ng!</p></div>';
+  var mn=Math.min.apply(null,H.players.map(function(p){return p.total}));
+  h+='<div class="sc">';
+  H.players.forEach(function(p,i){var warn=p.total>=HWIN*0.75;h+='<div class="sc-p"><div class="sc-n" style="color:'+COL[i%6]+'">'+e(p.name)+'</div><div class="sc-v" style="color:'+(p.total===mn?'var(--ok)':warn?'var(--dn)':'var(--tx)')+'">'+p.total+'</div></div>'});
+  h+='</div>';
+  if(!H.over){
+    if(!Object.keys(hIn).length)hInit();
+    var moonIdx=H.players.findIndex(function(_,i){return hIn[i]&&hIn[i].moon});
+    h+='<div class="pnl" style="margin-top:0"><h3>Runda '+(H.players[0].rounds.length+1)+' \u2014 tog n\u00e5gon M\u00e5nen?</h3>';
+    h+='<div class="bg2" style="grid-template-columns:repeat('+(H.players.length+1)+',1fr);margin-bottom:10px">';
+    H.players.forEach(function(p,i){var sel=moonIdx===i;h+='<button class="btn'+(sel?' ac':'')+'" onclick="H.players.forEach(function(_,j){hIn[j].moon=false});'+(sel?'hIn['+i+'].moon=false':'hIn['+i+'].moon=true')+';render()">'+(sel?'\ud83c\udf19 ':'')+e(p.name)+'</button>'});
+    h+='<button class="btn'+(moonIdx<0?' ac':'')+'" onclick="H.players.forEach(function(_,j){hIn[j].moon=false});render()">Ingen</button></div>';
+    if(moonIdx<0){
+      h+='<div class="sl">Po\u00e4ng per spelare</div>';
+      H.players.forEach(function(p,i){
+        var ri=hIn[i]||{};var pts=hPts(i);
+        h+='<div style="background:var(--surf2);border:0.5px solid var(--brd);border-radius:11px;padding:9px 11px;margin-bottom:7px">';
+        h+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:7px"><span style="font-size:13px;font-weight:600;color:'+COL[i%6]+'">'+e(p.name)+'</span><span style="font-size:14px;font-weight:700;color:'+(pts>0?'var(--dn)':'var(--tx3)')+'">+'+pts+' p</span></div>';
+        h+='<div style="display:flex;gap:8px;align-items:center;margin-bottom:7px"><span style="font-size:11px;color:var(--tx3);width:65px">\u2665 Hj\u00e4rter (+1 st)</span><button class="nb" onclick="hIn['+i+'].hj=Math.max(0,(hIn['+i+'].hj||0)-1);render()">\u2212</button><span class="nv">'+(ri.hj||0)+'</span><button class="nb" onclick="hIn['+i+'].hj=Math.min(13,(hIn['+i+'].hj||0)+1);render()">+</button></div>';
+        h+='<button class="btn'+(ri.sq?' dn':'')+'" onclick="hIn['+i+'].sq=!hIn['+i+'].sq;render()">\u2660 Dam '+(ri.sq?'\u2713':'')+' <span class="bls">+13 p</span></button>';
+        h+='</div>';
+      });
+    } else {
+      h+='<div style="background:var(--acbg);border:0.5px solid var(--acb);border-radius:11px;padding:11px;margin-bottom:7px;text-align:center"><div style="font-size:14px;font-weight:600;color:var(--ac)">\ud83c\udf19 '+e(H.players[moonIdx].name)+' tog alla po\u00e4ngkort</div><div style="font-size:12px;color:var(--tx2);margin-top:3px">F\u00e5r 0 p \u2014 alla andra f\u00e5r 26 p</div></div>';
+    }
+    h+='<button class="ab ok" onclick="hSave()" style="width:100%;padding:11px;font-size:14px;font-weight:600;margin-top:4px">Spara runda \u2192</button></div>';
+  }
+  h+='<div class="ba"><button class="ab" onclick="H.shHist=!H.shHist;render()">\ud83d\udccb Historik</button><button class="ab dn" onclick="hReset()">Nytt spel</button></div>';
+  if(H.shHist){
+    var mxR=Math.max.apply(null,H.players.map(function(p){return p.rounds.length}).concat([0]));
+    h+='<div class="pnl"><h3>Historik</h3><div style="overflow-x:auto"><table><tr><th>Runda</th>';
+    H.players.forEach(function(p,pi){h+='<th style="color:'+COL[pi%6]+'">'+e(p.name)+'</th>'});
+    h+='</tr>';
+    for(var r=0;r<mxR;r++){h+='<tr><td style="color:var(--tx3)">'+(r+1)+'</td>';H.players.forEach(function(p){var rd=p.rounds[r];if(!rd){h+='<td>\u2013</td>';return}h+=rd.moon?'<td style="color:var(--ac)">\ud83c\udf19</td>':'<td class="'+(rd.pts>0?'neg':'')+'">'+(rd.pts>0?'+'+rd.pts:rd.pts)+'</td>'});h+='</tr>'}
+    h+='<tr style="font-weight:700"><td>\u03a3</td>';H.players.forEach(function(p){h+='<td>'+p.total+'</td>'});h+='</tr></table></div></div>';
+  }
+  return h;
+}
+var CA=ld('can1')||{variant:'canasta',teams:[{name:'Lag 1',total:0,rounds:[]},{name:'Lag 2',total:0,rounds:[]}],shHist:false,shRef:false,over:false,winner:null,setup:true};
+var CAWIN={canasta:5000,samba:10000,bolivia:15000};
+var CABONUS={canasta:{rod:500,svart:300,samba:0,bolivia:0,avslut:100},samba:{rod:500,svart:300,samba:1500,bolivia:0,avslut:100},bolivia:{rod:500,svart:300,samba:1500,bolivia:2000,avslut:100}};
+function svCA(){sv('can1',CA)}
+var caIn={team:0,hand:{},mode:'malda'};
+function caInit(){caIn={team:0,hand:{joker:0,tva:0,ess:0,hog:0,lag:0,rodtrea:0,svartrea:0,rodC:0,svartC:0,sambas:0,bolivias:0,avslut:false,malat:true},mode:'malda'}}
+function caCalc(hand){
+  var b=CABONUS[CA.variant]||CABONUS.canasta;
+  var pts=0;
+  pts+=(hand.joker||0)*50+(hand.tva||0)*20+(hand.ess||0)*20+(hand.hog||0)*10+(hand.lag||0)*5;
+  var rtSign=hand.malat?1:-1;
+  pts+=(hand.rodtrea||0)*100*rtSign;
+  if((hand.rodtrea||0)>=4)pts+=400*rtSign;
+  pts+=(hand.svartrea||0)*5;
+  pts+=(hand.rodC||0)*b.rod+(hand.svartC||0)*b.svart+(hand.sambas||0)*b.samba+(hand.bolivias||0)*b.bolivia;
+  if(hand.avslut)pts+=b.avslut;
+  return pts;
+}
+function caSave(){
+  var pts=caCalc(caIn.hand);
+  var ap=caIn.mode==='malda'?pts:-pts;
+  CA.teams[caIn.team].total+=ap;
+  CA.teams[caIn.team].rounds.push(Object.assign({},caIn.hand,{pts:ap,mode:caIn.mode}));
+  var win=CAWIN[CA.variant]||5000;
+  if(CA.teams.some(function(t){return t.total>=win})){CA.over=true;var best=CA.teams.reduce(function(a,b){return a.total>b.total?a:b});CA.winner=best.name}
+  caInit();svCA();render();
+}
+function caReset(){dlg('Nytt spel','Nollst\u00e4lla?',function(){CA.teams=CA.teams.map(function(t){return{name:t.name,total:0,rounds:[]}});CA.over=false;CA.winner=null;CA.shHist=false;CA.shRef=false;CA.setup=false;caInit();svCA();render()})}
+function rCanasta(){
+  var vn={canasta:'Canasta',samba:'Samba',bolivia:'Bolivia'};
+  var win=CAWIN[CA.variant]||5000;
+  var b=CABONUS[CA.variant]||CABONUS.canasta;
+  var h='<div class="tb"><button class="bk" onclick="scr=\'home\';render()">\u2190 Hem</button><h1>'+vn[CA.variant]+'</h1><span class="ts">M\u00e5l '+win.toLocaleString()+' p</span></div>';
+  if(CA.setup){
+    h+='<div class="si"><h3>Variant</h3><div class="bg2 c3" style="margin-bottom:13px">';
+    ['canasta','samba','bolivia'].forEach(function(v){h+='<button class="btn'+(CA.variant===v?' ac':'')+'" onclick="CA.variant=\''+v+'\';svCA();render()">'+vn[v]+'<span class="bls">M\u00e5l '+(CAWIN[v]/1000)+' 000</span></button>'});
+    h+='</div><h3 style="margin-bottom:8px">Lag</h3>';
+    CA.teams.forEach(function(t,i){h+='<div style="display:flex;align-items:center;gap:7px;margin-bottom:7px"><div class="dot" style="background:'+COL[i%6]+'"></div><input class="ai" value="'+e(t.name)+'" style="flex:1" oninput="CA.teams['+i+'].name=this.value"/></div>'});
+    h+='</div><button class="ab ok" onclick="CA.setup=false;caInit();svCA();render()" style="width:100%;padding:11px;font-size:14px;font-weight:600;margin-top:4px">Starta \u2192</button>';
+    return h;
+  }
+  if(CA.over&&CA.winner)h+='<div class="win-banner"><p>\ud83c\udfc6 '+e(CA.winner)+' vinner!</p></div>';
+  h+='<div class="sc">';
+  CA.teams.forEach(function(t,i){h+='<div class="sc-p"><div class="sc-n" style="color:'+COL[i%6]+'">'+e(t.name)+'</div><div class="sc-v">'+t.total.toLocaleString()+'</div></div>'});
+  h+='</div>';
+  if(!CA.over){
+    if(!caIn.hand||!Object.keys(caIn.hand).length)caInit();
+    var preview=caCalc(caIn.hand);var isMinus=caIn.mode==='kvar';
+    h+='<div class="pnl" style="margin-top:0">';
+    h+='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:9px"><h3>Registrera po\u00e4ng</h3><span style="font-size:17px;font-weight:700;color:'+(isMinus?'var(--dn)':'var(--ok)')+'">'+((isMinus?'\u2212':'+')+preview.toLocaleString())+' p</span></div>';
+    h+='<div class="sl" style="margin-top:0">Lag</div><div class="bg2 c2" style="margin-bottom:8px">';
+    CA.teams.forEach(function(t,i){h+='<button class="btn'+(caIn.team===i?' ac':'')+'" onclick="caIn.team='+i+';render()">'+e(t.name)+'</button>'});
+    h+='</div>';
+    h+='<div class="sl">Typ</div><div class="bg2 c2" style="margin-bottom:8px">';
+    h+='<button class="btn'+(caIn.mode==='malda'?' ok':'')+'" onclick="caIn.mode=\'malda\';render()">\u2713 M\u00e4lda kort<span class="bls">+ po\u00e4ng</span></button>';
+    h+='<button class="btn'+(caIn.mode==='kvar'?' dn':'')+'" onclick="caIn.mode=\'kvar\';render()">\u2717 Kvar p\u00e5 hand<span class="bls">\u2212 po\u00e4ng</span></button></div>';
+    h+='<div class="sl">Kort</div>';
+    var kts=[{k:'joker',l:'Jokrar',p:50},{k:'tva',l:'Tv\u00e5or',p:20},{k:'ess',l:'Ess',p:20},{k:'hog',l:'8\u2013K',p:10},{k:'lag',l:'4\u20137',p:5},{k:'rodtrea',l:'R\u00f6da treor',p:'\u00b1100'},{k:'svartrea',l:'Svarta treor',p:5}];
+    h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:8px">';
+    kts.forEach(function(kt){
+      var val=caIn.hand[kt.k]||0;
+      h+='<div style="background:var(--surf2);border:0.5px solid var(--brd);border-radius:10px;padding:7px 9px">';
+      h+='<div style="font-size:10px;color:var(--tx3);margin-bottom:4px">'+kt.l+' ('+kt.p+' p)</div>';
+      h+='<div class="num-row"><button class="nb" onclick="caIn.hand[\''+kt.k+'\']=Math.max(0,(caIn.hand[\''+kt.k+'\']||0)-1);render()">\u2212</button><span class="nv">'+val+'</span><button class="nb" onclick="caIn.hand[\''+kt.k+'\']=(caIn.hand[\''+kt.k+'\']||0)+1;render()">+</button></div></div>';
+    });
+    h+='</div>';
+    h+='<button class="btn'+(caIn.hand.malat?' ac':'')+'" onclick="caIn.hand.malat=!caIn.hand.malat;render()" style="width:100%;margin-bottom:8px">'+(caIn.hand.malat?'\u2713':'○')+' Laget har m\u00e4lat<span class="bls">avg\u00f6r om r\u00f6da treor ger + eller \u2212</span></button>';
+    h+='<div class="sl">Bonusar</div>';
+    var bons=[{k:'rodC',l:'R\u00f6da canastor',p:b.rod},{k:'svartC',l:'Svarta canastor',p:b.svart}];
+    if(CA.variant==='samba'||CA.variant==='bolivia')bons.push({k:'sambas',l:'Sambas',p:b.samba});
+    if(CA.variant==='bolivia')bons.push({k:'bolivias',l:'Bolivias',p:b.bolivia});
+    h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:8px">';
+    bons.forEach(function(bon){
+      var val=caIn.hand[bon.k]||0;
+      h+='<div style="background:var(--surf2);border:0.5px solid var(--brd);border-radius:10px;padding:7px 9px">';
+      h+='<div style="font-size:10px;color:var(--tx3);margin-bottom:4px">'+bon.l+' (+'+bon.p.toLocaleString()+' p)</div>';
+      h+='<div class="num-row"><button class="nb" onclick="caIn.hand[\''+bon.k+'\']=Math.max(0,(caIn.hand[\''+bon.k+'\']||0)-1);render()">\u2212</button><span class="nv">'+val+'</span><button class="nb" onclick="caIn.hand[\''+bon.k+'\']=(caIn.hand[\''+bon.k+'\']||0)+1;render()">+</button></div></div>';
+    });
+    h+='</div>';
+    h+='<button class="btn'+(caIn.hand.avslut?' ac':'')+'" onclick="caIn.hand.avslut=!caIn.hand.avslut;render()" style="width:100%;margin-bottom:8px">'+(caIn.hand.avslut?'\u2713':'○')+' Avslut (+'+b.avslut+' p)</button>';
+    h+='<button class="ab ok" onclick="caSave()" style="width:100%;padding:11px;font-size:14px;font-weight:600">L\u00e4gg till '+(isMinus?'\u2212':'+')+preview.toLocaleString()+' p f\u00f6r '+e(CA.teams[caIn.team].name)+' \u2192</button></div>';
+  }
+  h+='<div class="ba"><button class="ab" onclick="CA.shHist=!CA.shHist;CA.shRef=false;render()">\ud83d\udccb Historik</button><button class="ab" onclick="CA.shRef=!CA.shRef;CA.shHist=false;render()">? Po\u00e4ng</button><button class="ab" onclick="CA.setup=true;svCA();render()">\u2699\ufe0f Inst\u00e4llningar</button><button class="ab dn" onclick="caReset()">Nytt spel</button></div>';
+  if(CA.shHist){
+    h+='<div class="pnl"><h3>H\u00e4ndelser</h3><table><tr><th>#</th><th>Lag</th><th>Typ</th><th style="text-align:right">Po\u00e4ng</th></tr>';
+    var evs=[];CA.teams.forEach(function(t,ti){t.rounds.forEach(function(r){evs.push({pts:r.pts,mode:r.mode,tn:t.name,col:COL[ti%6]})})});
+    evs.slice(-20).reverse().forEach(function(ev,idx){var s=ev.pts>=0?'+':'';h+='<tr><td style="color:var(--tx3)">'+(evs.length-idx)+'</td><td style="color:'+ev.col+'">'+e(ev.tn)+'</td><td style="font-size:11px">'+(ev.mode==='malda'?'M\u00e4lda':'Kvar p\u00e5 hand')+'</td><td style="text-align:right" class="'+(ev.pts>=0?'pos':'neg')+'">'+s+ev.pts.toLocaleString()+'</td></tr>'});
+    h+='</table></div>';
+  }
+  if(CA.shRef){
+    h+='<div class="pnl"><h3>Po\u00e4ngtabell \u2014 '+vn[CA.variant]+'</h3><div class="rg"><div><div class="rr"><span>Joker</span><span>50 p</span></div><div class="rr"><span>Tv\u00e5a (vild)</span><span>20 p</span></div><div class="rr"><span>Ess</span><span>20 p</span></div><div class="rr"><span>8\u2013Kung</span><span>10 p</span></div></div><div><div class="rr"><span>4\u20137</span><span>5 p</span></div><div class="rr"><span>R\u00f6d trea</span><span>\u00b1100 p</span></div><div class="rr"><span>Svart trea</span><span>5 p</span></div></div></div>';
+    h+='<div class="rr" style="margin-top:6px"><span>R\u00f6d canasta</span><span>'+b.rod.toLocaleString()+' p</span></div><div class="rr"><span>Svart canasta</span><span>'+b.svart.toLocaleString()+' p</span></div>';
+    if(b.samba)h+='<div class="rr"><span>Samba</span><span>'+b.samba.toLocaleString()+' p</span></div>';
+    if(b.bolivia)h+='<div class="rr"><span>Bolivia</span><span>'+b.bolivia.toLocaleString()+' p</span></div>';
+    h+='<div class="rr"><span>Avslut</span><span>'+b.avslut+' p</span></div><div class="rr"><span>Alla 4 r\u00f6da treor</span><span>+400 p extra</span></div>';
+    h+='<p style="font-size:11px;color:var(--tx3);margin-top:7px">R\u00f6da treor: +100 om m\u00e4lat, \u2212100 om ej m\u00e4lat</p></div>';
+  }
+  return h;
+}
+function rHome(){
+  return '<div class="hdr"><h1>\ud83c\udccf Kortspel</h1><p>V\u00e4lj ett spel</p></div>'+
+    '<div class="gc" onclick="scr=\'chicago\';render()"><div class="gi">\u2660\ufe0f</div><div class="gn"><h2>Chicago</h2><p>Pokerkort \u00b7 M\u00e5l 52 p \u00b7 K\u00f6pstopp 45</p></div></div>'+
+    '<div class="gc" onclick="scr=\'plump\';render()"><div class="gi">\ud83c\udfaf</div><div class="gn"><h2>Plump</h2><p>Stick-gissning \u00b7 10 kort ner och upp</p></div></div>'+
+    '<div class="gc" onclick="scr=\'kasino\';render()"><div class="gi">\u2666\ufe0f</div><div class="gn"><h2>Kasino</h2><p>Samla kort \u00b7 Flest po\u00e4ng vinner</p></div></div>'+
+    '<div class="gc" onclick="scr=\'hjarter\';render()"><div class="gi">\u2665\ufe0f</div><div class="gn"><h2>Hj\u00e4rter</h2><p>Undvik hj\u00e4rter \u00b7 Slut vid 100 p \u00b7 L\u00e4gst vinner</p></div></div>'+
+    '<div class="gc" onclick="CA.setup=true;scr=\'canasta\';render()"><div class="gi">\ud83c\udccf</div><div class="gn"><h2>Canasta / Samba / Bolivia</h2><p>V\u00e4lj variant \u00b7 Po\u00e4ngkalkylator per hand</p></div></div>';
+}
+function render(){
+  var app=document.getElementById('app');
+  if(scr==='home')app.innerHTML=rHome();
+  else if(scr==='chicago')app.innerHTML=rChicago();
+  else if(scr==='plump')app.innerHTML=rPlump();
+  else if(scr==='kasino')app.innerHTML=rKasino();
+  else if(scr==='hjarter')app.innerHTML=rHjarter();
+  else if(scr==='canasta')app.innerHTML=rCanasta();
+  var np=document.getElementById('np');if(np)np.focus();
+}
+render();
+</script>
+</body>
+</html>
