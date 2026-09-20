@@ -566,6 +566,9 @@ function render(){
   var np=document.getElementById('np');if(np)np.focus();
 }
 render();
+  if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('./sw.js');
+}
 </script>
 </body>
 </html>
